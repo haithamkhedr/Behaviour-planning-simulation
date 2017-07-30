@@ -62,7 +62,7 @@ public:
     
     string display();
     
-    void increment(int dt);
+    void increment(int dt = 1);
     
     vector<int> state_at(int t);
     

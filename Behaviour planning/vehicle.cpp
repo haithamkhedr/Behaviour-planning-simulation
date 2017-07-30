@@ -99,7 +99,7 @@ vector<Vehicle::SnapShot> Vehicle::generate_trajectory(string state,map<int, vec
     trajectory.push_back(snapshot);
     
     for(int t = 0; t < horizon; t++){
-        
+        this->increment();
     }
     
     this->restore_from_snapshot(snapshot);
