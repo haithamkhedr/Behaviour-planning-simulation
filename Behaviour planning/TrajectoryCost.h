@@ -18,8 +18,15 @@ class TrajectoryCost{
 
 public:
     
-private:
-    
+    TrajectoryCost(){
+        
+        cf.push_back(&TrajectoryCost::change_lane_cost);
+        cf.push_back(&TrajectoryCost::distance_from_goal_lane);
+        cf.push_back(&TrajectoryCost::speed_cost);
+        cf.push_back(&TrajectoryCost::collision_cost);
+        cf.push_back(&TrajectoryCost::buffer_cost);
+        
+    }
     struct TrajectoryData{
         int proposedLane;
         int avgSpeed;
@@ -30,11 +37,17 @@ private:
         int lastLaneDiffFromGoal;
         bool collides;
     };
+
+private:
     
     
-    typedef double (*CostFn)(Vehicle,vector<Vehicle::SnapShot>, map<int,vector< vector<int> > >,TrajectoryCost::TrajectoryData ) ;
+    
+    typedef double (TrajectoryCost::*CostFnPtr)(Vehicle,vector<Vehicle::SnapShot>, map<int,vector< vector<int> > >,TrajectoryCost::TrajectoryData ) ;
+    typedef double (CostFn)(Vehicle,vector<Vehicle::SnapShot>, map<int,vector< vector<int> > >,TrajectoryCost::TrajectoryData ) ;
+
     CostFn change_lane_cost, distance_from_goal_lane, speed_cost, collision_cost, buffer_cost;
-    CostFn cf[5] = {change_lane_cost, distance_from_goal_lane, speed_cost, collision_cost, buffer_cost};
+    vector<CostFnPtr> cf;
+    TrajectoryData getTrajectoryData(const vector<Vehicle::SnapShot>& trajectory, const Vehicle& vehicle, map<int,vector< vector<int> > > predictions);
     
     
 };
