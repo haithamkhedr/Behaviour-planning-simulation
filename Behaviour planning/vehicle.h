@@ -83,7 +83,7 @@ public:
     void realize_prep_lane_change(map<int,vector< vector<int> > > predictions, string direction);
     
     vector<vector<int> > generate_predictions(int horizon);
-private:
+    
     struct SnapShot{
         
         int lane;
@@ -92,6 +92,8 @@ private:
         int a;
         string state;
     };
+private:
+  
     
     map<string , vector<string> > availableStates;
     vector<SnapShot> generate_trajectory(string state,map<int, vector < vector<int> > >  predictions,int horizon = 5);

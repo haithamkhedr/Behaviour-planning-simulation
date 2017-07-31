@@ -9,8 +9,13 @@
 #ifndef TrajectoryCost_hpp
 #define TrajectoryCost_hpp
 
+#include "vehicle.h"
+
+
 class TrajectoryCost{
-  
+
+    
+
 public:
     
 private:
@@ -22,12 +27,17 @@ private:
         float rmsAccl;
         int closestDist;
         int lastDistToGoal;
-        int lastLaneFromGoal;
+        int lastLaneDiffFromGoal;
         bool collides;
     };
     
     
+    typedef double (*CostFn)(Vehicle,vector<Vehicle::SnapShot>, map<int,vector< vector<int> > >,TrajectoryCost::TrajectoryData ) ;
+    CostFn change_lane_cost, distance_from_goal_lane, speed_cost, collision_cost, buffer_cost;
+    CostFn cf[5] = {change_lane_cost, distance_from_goal_lane, speed_cost, collision_cost, buffer_cost};
+    
+    
 };
-#include <stdio.h>
+
 
 #endif /* TrajectoryCost_hpp */
