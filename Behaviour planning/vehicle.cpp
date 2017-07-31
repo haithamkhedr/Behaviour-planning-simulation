@@ -97,9 +97,12 @@ vector<Vehicle::SnapShot> Vehicle::generate_trajectory(string state,map<int, vec
     vector<Vehicle::SnapShot> trajectory;
     SnapShot snapshot = this->snapshot();
     trajectory.push_back(snapshot);
+    this->state = state;
     
     for(int t = 0; t < horizon; t++){
+        realize_state(predictions);
         this->increment();
+        trajectory.push_back(this->snapshot());
     }
     
     this->restore_from_snapshot(snapshot);

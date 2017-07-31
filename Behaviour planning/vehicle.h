@@ -89,6 +89,7 @@ private:
         int lane;
         int s;
         int v;
+        int a;
         string state;
     };
     
@@ -96,12 +97,13 @@ private:
     vector<SnapShot> generate_trajectory(string state,map<int, vector < vector<int> > >  predictions,int horizon = 5);
     
     inline SnapShot snapshot(){
-        return {lane,s,v,state};
+        return {lane,s,v,a,state};
     }
     inline void restore_from_snapshot(SnapShot snapshot){
         lane = snapshot.lane;
         s = snapshot.s;
         v = snapshot.v;
+        a = snapshot.a;
         state = snapshot.state;
     }
     
