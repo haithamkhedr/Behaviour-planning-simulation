@@ -11,12 +11,26 @@
 
 #include "vehicle.h"
 
+#define COLLISION   10e6
+#define DANGER      10e5
+#define REACH_GOAL  10e5
+#define COMFORT     10e4
+#define EFFICIENCY  10e2
+
+struct collider{
+    
+    bool collision ; // is there a collision?
+    int  time; // time collision happens
+    
+};
 
 class TrajectoryCost{
 
     
 
 public:
+
+    double calculateCost(Vehicle vehicle,vector<Vehicle::SnapShot> trajectory, map<int,vector< vector<int> > > predictions);
     
     TrajectoryCost(){
         
@@ -35,7 +49,7 @@ public:
         int closestDist;
         int lastDistToGoal;
         int lastLaneDiffFromGoal;
-        bool collides;
+        Collider collides;
     };
 
 private:
@@ -48,7 +62,7 @@ private:
     CostFn change_lane_cost, distance_from_goal_lane, speed_cost, collision_cost, buffer_cost;
     vector<CostFnPtr> cf;
     TrajectoryData getTrajectoryData(const vector<Vehicle::SnapShot>& trajectory, const Vehicle& vehicle, map<int,vector< vector<int> > > predictions);
-    
+   
     
 };
 
