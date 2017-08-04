@@ -11,7 +11,7 @@
 
 #include "vehicle.h"
 
-#define COLLISION   10e6
+#define COLLISION   10e4
 #define DANGER      10e5
 #define REACH_GOAL  10e5
 #define COMFORT     10e4

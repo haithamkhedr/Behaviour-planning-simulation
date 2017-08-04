@@ -50,10 +50,10 @@ double TrajectoryCost::speed_cost(Vehicle vehicle,vector<Vehicle::SnapShot> traj
 double TrajectoryCost::collision_cost(Vehicle vehicle,vector<Vehicle::SnapShot> trajectory, map<int,vector< vector<int> > > predictions,TrajectoryCost::TrajectoryData trajectoryData){
     double cost = 0;
     if(trajectoryData.collides.collision == true) {
-	double timeToCollision = trajectoryData.collides.time;	
+        double timeToCollision = trajectoryData.collides.time;	
         timeToCollision *= timeToCollision;
         double multiplier = exp(-timeToCollision);
-    	double cost = multiplier * COLLISION;
+        cost = multiplier * COLLISION;
     }
     return cost;
 }
@@ -85,7 +85,7 @@ map<int,vector< vector<int> > > TrajectoryCost::filterVehicles(map<int,vector< v
     map<int,vector< vector<int> > > ret;
     map<int,vector< vector<int> > >::iterator it;
     for(it = predictions.begin(); it != predictions.end(); it++){
-        if(it->second[0][1] == lane && it->first != -1 ){
+        if(it->second[0][0] == lane && it->first != -1 ){
             ret[it->first] = it->second;
         }
     }
@@ -120,19 +120,19 @@ TrajectoryCost::TrajectoryData TrajectoryCost::getTrajectoryData(const vector<Ve
 	if(a >maxAcc)
 	    maxAcc = a;
 
-	for(int j=0;j < laneVehicles.size(); j++){
+        for(map<int,vector< vector<int> > >::iterator j= laneVehicles.begin() ; j != laneVehicles.end() ; j++){
 	    	
-	    vector<int> otherCar_curr = laneVehicles[j][i-1];
-	    vector<int> otherCar_state = laneVehicles[j][i];
+	    vector<int> otherCar_prev = j->second[i-1];
+	    vector<int> otherCar_state = j->second[i];
 	    if(collider.collision == false){
-		if( (otherCar_curr[0] < myCar.s && otherCar_state[0] >= myCar.s) ||
-			(otherCar_curr[0] > myCar.s && otherCar_state[0] <= myCar.s)) {
+		if( (otherCar_prev[1] < myCar.s && otherCar_state[1] >= myCar.s) ||
+			(otherCar_prev[1] > myCar.s && otherCar_state[1] <= myCar.s)) {
 		    collider.collision = true;
 		    collider.time = i;
 		}
 	    
 	    }
-	    int distance = abs(otherCar_state[0] - myCar.s);
+	    int distance = abs(otherCar_state[1] - myCar.s);
 	    if(distance < closestDist){
 		closestDist = distance;
 	    }

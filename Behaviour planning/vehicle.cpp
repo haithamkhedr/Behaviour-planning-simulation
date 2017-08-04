@@ -23,7 +23,8 @@ Vehicle::Vehicle(int lane, int s, int v, int a) {
     availableStates["PLCL"] = {"KL" , "LCL"};
     availableStates["PLCR"] = {"KL" , "LCR"};
     availableStates["LCL"] = {"KL"};
-
+    availableStates["LCR"] = {"KL"};
+    
     
 }
 
@@ -66,21 +67,21 @@ void Vehicle::update_state(map<int,vector < vector<int> > > predictions) {
      */
     vector<string> next_states = availableStates[state];
     if(next_states.size() == 1){
-        state = next_states[0];
-        realize_state(predictions);
+        this->state = next_states[0];
+        return;
     }
     else if(state == "KL"){
         if(lane == 0){
-            auto it = std::find(next_states.begin(), next_states.end(), "PLCL");
+            auto it = std::find(next_states.begin(), next_states.end(), "PLCR");
             if(it != next_states.end())
                 next_states.erase(it);
         }
         if(lane == lanes_available - 1){
-            if(lane == 0){
-                auto it = std::find(next_states.begin(), next_states.end(), "PLCR");
-                if(it != next_states.end())
-                    next_states.erase(it);
-            }
+            
+            auto it = std::find(next_states.begin(), next_states.end(), "PLCL");
+            if(it != next_states.end())
+                next_states.erase(it);
+            
         }
     }
     //Now we have potential states
@@ -147,6 +148,10 @@ void Vehicle::increment(int dt) {
     
     this->s += this->v * dt;
     this->v += this->a * dt;
+    if(this->v < 0){
+        this->a -= this->v;
+        this->v = max(0,this->v);
+    }
 }
 
 vector<int> Vehicle::state_at(int t) {
@@ -283,6 +288,8 @@ void Vehicle::realize_lane_change(map<int,vector< vector<int> > > predictions, s
         delta = 1;
     }
     this->lane += delta;
+    this->lane = min(this->lane, this->lanes_available-1);
+    this->lane = max(this->lane, 0);
     int lane = this->lane;
     int s = this->s;
     this->a = _max_accel_for_lane(predictions, lane, s);
