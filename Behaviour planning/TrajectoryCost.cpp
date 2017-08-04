@@ -16,25 +16,25 @@ double TrajectoryCost::change_lane_cost(Vehicle vehicle,vector<Vehicle::SnapShot
 
 {
     int currLane = vehicle.lane;
-    int proposed_lane =  trajectoryData.lastLaneDiffFromGoal; 	
+    int proposed_lane =  trajectoryData.proposedLane;
     double cost  = 0;
-
+    
     if(proposed_lane > currLane)
-	cost = COMFORT;
+        cost = COMFORT;
     else if(proposed_lane < currLane)
-	cost = -COMFORT;
-
+        cost = -COMFORT;
+    
     return cost;
 }
 
 double TrajectoryCost::distance_from_goal_lane(Vehicle vehicle,vector<Vehicle::SnapShot> trajectory, map<int,vector< vector<int> > > predictions,TrajectoryCost::TrajectoryData trajectoryData){
-
+    
     int dd = trajectoryData.lastLaneDiffFromGoal;
     int ds = trajectoryData.lastDistToGoal;
     double timeToGoal = ds / trajectoryData.avgSpeed;
     double multiplier = (5 * dd) /timeToGoal;
     double cost = multiplier * REACH_GOAL;
-
+    
     return cost;
 }
 
@@ -50,7 +50,7 @@ double TrajectoryCost::speed_cost(Vehicle vehicle,vector<Vehicle::SnapShot> traj
 double TrajectoryCost::collision_cost(Vehicle vehicle,vector<Vehicle::SnapShot> trajectory, map<int,vector< vector<int> > > predictions,TrajectoryCost::TrajectoryData trajectoryData){
     double cost = 0;
     if(trajectoryData.collides.collision == true) {
-        double timeToCollision = trajectoryData.collides.time;	
+        double timeToCollision = trajectoryData.collides.time;
         timeToCollision *= timeToCollision;
         double multiplier = exp(-timeToCollision);
         cost = multiplier * COLLISION;
@@ -60,7 +60,7 @@ double TrajectoryCost::collision_cost(Vehicle vehicle,vector<Vehicle::SnapShot> 
 
 
 double TrajectoryCost::buffer_cost(Vehicle vehicle,vector<Vehicle::SnapShot> trajectory, map<int,vector< vector<int> > > predictions,TrajectoryCost::TrajectoryData trajectoryData){
-
+    
     int closestDist = trajectoryData.closestDist;
     float tToCollision = closestDist / (float) trajectoryData.avgSpeed;
     double cost = 0;
@@ -71,13 +71,13 @@ double TrajectoryCost::buffer_cost(Vehicle vehicle,vector<Vehicle::SnapShot> tra
         cost = 0;
     }
     else{
-	double multiplier = tToCollision/DESIRED_BUFFER;
+        double multiplier = tToCollision/DESIRED_BUFFER;
         multiplier *= multiplier;
-	multiplier = 1 - multiplier;
-	cost = multiplier * DANGER;
-    	
+        multiplier = 1 - multiplier;
+        cost = multiplier * DANGER;
+        
     }
-
+    
     return cost;
 }
 
@@ -93,18 +93,24 @@ map<int,vector< vector<int> > > TrajectoryCost::filterVehicles(map<int,vector< v
 }
 
 TrajectoryCost::TrajectoryData TrajectoryCost::getTrajectoryData(const vector<Vehicle::SnapShot>& trajectory, const Vehicle& vehicle, map<int,vector< vector<int> > > predictions){
-
+    
     TrajectoryCost::TrajectoryData trData;
     Vehicle::SnapShot last = trajectory[trajectory.size()-1];
     Vehicle::SnapShot first = trajectory[1];
     Vehicle::SnapShot current = trajectory[0];
     int dt =  (trajectory.size());
-
-    trData.proposedLane = last.lane;
+    
+    if(first.state == "PLCR"){
+        trData.proposedLane = min(current.lane-1, vehicle.lanes_available);
+    }
+    else if(first.state == "PLCL"){
+        trData.proposedLane = max(0,current.lane+1);
+        
+    }
     trData.avgSpeed = (last.s - current.s) / (float)dt;
     trData.lastDistToGoal = vehicle.goal_s - last.s;
     trData.lastLaneDiffFromGoal = abs(last.lane - vehicle.goal_lane);
-
+    
     vector<int> accels;
     Collider collider;
     collider.collision = false;
@@ -113,42 +119,42 @@ TrajectoryCost::TrajectoryData TrajectoryCost::getTrajectoryData(const vector<Ve
     int rmsAcc = 0;
     map<int,vector< vector<int> > > laneVehicles = filterVehicles(predictions,last.lane);
     for(int i = 1; i < dt; ++i){
-	Vehicle::SnapShot myCar = trajectory[i]; 
-	int a = myCar.a;
-	accels.push_back(a);
-	rmsAcc += (a*a);
-	if(a >maxAcc)
-	    maxAcc = a;
-
+        Vehicle::SnapShot myCar = trajectory[i];
+        int a = myCar.a;
+        accels.push_back(a);
+        rmsAcc += (a*a);
+        if(a >maxAcc)
+            maxAcc = a;
+        
         for(map<int,vector< vector<int> > >::iterator j= laneVehicles.begin() ; j != laneVehicles.end() ; j++){
-	    	
-	    vector<int> otherCar_prev = j->second[i-1];
-	    vector<int> otherCar_state = j->second[i];
-	    if(collider.collision == false){
-		if( (otherCar_prev[1] < myCar.s && otherCar_state[1] >= myCar.s) ||
-			(otherCar_prev[1] > myCar.s && otherCar_state[1] <= myCar.s)) {
-		    collider.collision = true;
-		    collider.time = i;
-		}
-	    
-	    }
-	    int distance = abs(otherCar_state[1] - myCar.s);
-	    if(distance < closestDist){
-		closestDist = distance;
-	    }
-
-
-
-	}
-
+            
+            vector<int> otherCar_prev = j->second[i-1];
+            vector<int> otherCar_state = j->second[i];
+            if(collider.collision == false){
+                if( (otherCar_prev[1] < myCar.s && otherCar_state[1] >= myCar.s) ||
+                   (otherCar_prev[1] > myCar.s && otherCar_state[1] <= myCar.s)) {
+                    collider.collision = true;
+                    collider.time = i;
+                }
+                
+            }
+            int distance = abs(otherCar_state[1] - myCar.s);
+            if(distance < closestDist){
+                closestDist = distance;
+            }
+            
+            
+            
+        }
+        
     }
-
+    
     trData.maxAccl = maxAcc;
     trData.rmsAccl = (float)rmsAcc / accels.size();
     trData.closestDist = closestDist;
     trData.collides = collider;
-
-
+    
+    
     return trData;
 }
 
@@ -157,7 +163,7 @@ TrajectoryCost::TrajectoryData TrajectoryCost::getTrajectoryData(const vector<Ve
 
 
 double TrajectoryCost::calculateCost(Vehicle vehicle,vector<Vehicle::SnapShot> trajectory, map<int,vector< vector<int> > > predictions){
-
+    
     double cost = 0;
     TrajectoryCost::TrajectoryData trajData =  getTrajectoryData(trajectory,vehicle,predictions);
     for(int i = 0; i< cf.size(); i++){

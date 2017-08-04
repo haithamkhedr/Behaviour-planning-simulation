@@ -89,7 +89,7 @@ void Vehicle::update_state(map<int,vector < vector<int> > > predictions) {
     double minCost = 999999999;
     for(const string& state : next_states){
         //calculate trajectory
-        vector<Vehicle::SnapShot> trajectory = generate_trajectory(state,predictions);
+        vector<Vehicle::SnapShot> trajectory = generate_trajectory(state,predictions,6);
         //calculate cost of this trajectory
         TrajectoryCost tCost;
         cost = tCost.calculateCost(*this, trajectory, predictions);
