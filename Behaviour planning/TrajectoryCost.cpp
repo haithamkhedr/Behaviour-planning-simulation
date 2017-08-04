@@ -40,7 +40,7 @@ double TrajectoryCost::distance_from_goal_lane(Vehicle vehicle,vector<Vehicle::S
 
 double TrajectoryCost::speed_cost(Vehicle vehicle,vector<Vehicle::SnapShot> trajectory, map<int,vector< vector<int> > > predictions,TrajectoryCost::TrajectoryData trajectoryData){
     int target_speed = vehicle.target_speed;
-    int avgSpeed = trajectoryData.avgSpeed;
+    float avgSpeed = trajectoryData.avgSpeed;
     double multiplier = (target_speed - avgSpeed) / target_speed;
     double cost = multiplier * multiplier * EFFICIENCY;
     return cost;
@@ -64,10 +64,11 @@ double TrajectoryCost::buffer_cost(Vehicle vehicle,vector<Vehicle::SnapShot> tra
     int closestDist = trajectoryData.closestDist;
     float tToCollision = closestDist / (float) trajectoryData.avgSpeed;
     double cost = 0;
-    if(tToCollision == 0)
-	cost = 10 * DANGER;
+    if(closestDist == 0)
+        cost = 10 * DANGER;
+    
     else if(tToCollision > DESIRED_BUFFER){
-	cost = 0;
+        cost = 0;
     }
     else{
 	double multiplier = tToCollision/DESIRED_BUFFER;
@@ -100,7 +101,7 @@ TrajectoryCost::TrajectoryData TrajectoryCost::getTrajectoryData(const vector<Ve
     int dt =  (trajectory.size());
 
     trData.proposedLane = last.lane;
-    trData.avgSpeed = (last.v - current.v) / (float)dt;
+    trData.avgSpeed = (last.s - current.s) / (float)dt;
     trData.lastDistToGoal = vehicle.goal_s - last.s;
     trData.lastLaneDiffFromGoal = abs(last.lane - vehicle.goal_lane);
 
