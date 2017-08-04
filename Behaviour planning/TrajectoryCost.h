@@ -44,7 +44,7 @@ public:
     }
     struct TrajectoryData{
         int proposedLane;
-        int avgSpeed;
+        float avgSpeed;
         int maxAccl;
         float rmsAccl;
         int closestDist;

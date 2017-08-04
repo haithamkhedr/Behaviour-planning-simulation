@@ -4,6 +4,7 @@
 #include <math.h>
 #include <map>
 #include <string>
+#include "TrajectoryCost.h"
 #include <iterator>
 
 /**
@@ -83,10 +84,18 @@ void Vehicle::update_state(map<int,vector < vector<int> > > predictions) {
         }
     }
     //Now we have potential states
+    double cost = 0;
+    double minCost = 999999999;
     for(const string& state : next_states){
         //calculate trajectory
         vector<Vehicle::SnapShot> trajectory = generate_trajectory(state,predictions);
         //calculate cost of this trajectory
+        TrajectoryCost tCost;
+        cost = tCost.calculateCost(*this, trajectory, predictions);
+        if(cost < minCost){
+            minCost = cost;
+            this->state = state;
+        }
         
     }
     
@@ -117,9 +126,9 @@ void Vehicle::configure(vector<int> road_data) {
      */
     target_speed = road_data[0];
     lanes_available = road_data[1];
-    max_acceleration = road_data[2];
+    max_acceleration = road_data[4];
     goal_lane = road_data[3];
-    goal_s = road_data[4];
+    goal_s = road_data[2];
 }
 
 string Vehicle::display() {

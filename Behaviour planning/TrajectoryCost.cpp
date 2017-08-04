@@ -100,7 +100,7 @@ TrajectoryCost::TrajectoryData TrajectoryCost::getTrajectoryData(const vector<Ve
     int dt =  (trajectory.size());
 
     trData.proposedLane = last.lane;
-    trData.avgSpeed = (last.v - current.v) / dt;
+    trData.avgSpeed = (last.v - current.v) / (float)dt;
     trData.lastDistToGoal = vehicle.goal_s - last.s;
     trData.lastLaneDiffFromGoal = abs(last.lane - vehicle.goal_lane);
 
@@ -148,7 +148,7 @@ TrajectoryCost::TrajectoryData TrajectoryCost::getTrajectoryData(const vector<Ve
     trData.collides = collider;
 
 
-    return TrajectoryCost::TrajectoryData();
+    return trData;
 }
 
 
